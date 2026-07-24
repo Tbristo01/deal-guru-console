@@ -1,0 +1,5 @@
+# transient alert artifacts produced by scripts/fetch-deals.mjs
+alert.html
+alert-subject.txt
+alert-count.txt
+node_modules/

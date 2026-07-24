@@ -1,15 +1,17 @@
 name: Update deal feed
 
-# Runs the fetcher on a schedule AND on demand, then commits a fresh
-# deals.json that the dashboard reads. No server required.
+# Runs the fetcher twice a day AND on demand, commits a fresh deals.json,
+# and emails you the "hot" deals (margin >= ALERT_MARGIN). No server required.
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # every 6 hours (UTC). Change to taste, e.g. "0 13 * * *" = 1pm daily
-  workflow_dispatch: {}      # adds a manual "Run workflow" button in the Actions tab
+    # Cron is always UTC (no daylight saving). These are ~8am and ~6pm US Eastern (EDT).
+    - cron: "0 12 * * *"   # 08:00 ET  (morning drop)
+    - cron: "0 22 * * *"   # 18:00 ET  (evening drop)
+  workflow_dispatch: {}      # manual "Run workflow" button in the Actions tab
 
 permissions:
-  contents: write            # lets the job commit deals.json back to the repo
+  contents: write
 
 concurrency:
   group: update-deals
@@ -25,12 +27,13 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Fetch feeds and build deals.json
+      - name: Fetch feeds, build deals.json, prep alert
+        id: build
         env:
           MIN_MARGIN: "25"
           MAX_ITEMS: "60"
+          ALERT_MARGIN: "40"          # email me deals at/above this % off retail
           # Real affiliate sources activate automatically once these secrets exist.
-          # Add them under: Settings → Secrets and variables → Actions.
           RAKUTEN_TOKEN: ${{ secrets.RAKUTEN_TOKEN }}
           AWIN_TOKEN: ${{ secrets.AWIN_TOKEN }}
           AWIN_PUBLISHER_ID: ${{ secrets.AWIN_PUBLISHER_ID }}
@@ -39,9 +42,36 @@ jobs:
           IMPACT_AUTH_TOKEN: ${{ secrets.IMPACT_AUTH_TOKEN }}
           SKIMLINKS_ID: ${{ secrets.SKIMLINKS_ID }}
           SKIMLINKS_API_KEY: ${{ secrets.SKIMLINKS_API_KEY }}
-        run: node scripts/fetch-deals.mjs
+        run: |
+          node scripts/fetch-deals.mjs
+          echo "hot=$(cat alert-count.txt 2>/dev/null || echo 0)" >> "$GITHUB_OUTPUT"
 
-      - name: Commit if changed
+      - name: Detect mail config
+        id: mailcfg
+        env:
+          MU: ${{ secrets.MAIL_USERNAME }}
+        run: |
+          if [ -n "$MU" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Email hot deals
+        if: steps.build.outputs.hot != '0' && steps.mailcfg.outputs.ok == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}      # e.g. smtp.mail.me.com  (iCloud) or smtp.gmail.com
+          server_port: ${{ secrets.MAIL_PORT }}           # 587
+          secure: false
+          username: ${{ secrets.MAIL_USERNAME }}          # your full email address
+          password: ${{ secrets.MAIL_PASSWORD }}          # an APP-SPECIFIC password, not your login password
+          subject: 🔥 ${{ steps.build.outputs.hot }} hot deals ≥ 40% off — Deal Guru
+          to: ${{ secrets.MAIL_TO }}                      # where to send (defaults to yourself)
+          from: Deal Guru <${{ secrets.MAIL_USERNAME }}>
+          html_body: file://alert.html
+
+      - name: Log alert skip reason
+        if: steps.build.outputs.hot != '0' && steps.mailcfg.outputs.ok != 'true'
+        run: echo "::notice::Found ${{ steps.build.outputs.hot }} hot deals but MAIL_* secrets are not set — email skipped. Add them to enable alerts."
+
+      - name: Commit deals.json if changed
         run: |
           git config user.name "deal-guru-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
