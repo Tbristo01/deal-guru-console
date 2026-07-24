@@ -196,7 +196,7 @@
   .feedbar b { color: var(--text); font-family: var(--mono); }
   .feedbar .btn { flex: none; }
 
-  .badges { display: flex; align-items: center; gap: 6px; flex: none; }
+  .badges { display: flex; align-items: center; gap: 5px; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; }
   .feed-tag {
     font-size: 9px; letter-spacing: 0.1em; font-weight: 800; padding: 3px 6px; border-radius: 5px;
     color: var(--green); background: var(--green-bg); border: 1px solid rgba(99,192,138,0.35);
@@ -228,7 +228,7 @@
   /* ---------- deal cards ---------- */
   .deal-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 14px; gap: 12px; flex-wrap: wrap; }
   .deal-head .label { font-size: 12px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
   .card {
     background: linear-gradient(180deg, var(--surface), var(--bg-2));
     border: 1px solid var(--line); border-radius: var(--radius);
@@ -238,9 +238,9 @@
   .card:hover { border-color: var(--line-2); box-shadow: 0 12px 40px rgba(0,0,0,0.45); transform: translateY(-2px); }
   .card.flagged { border-color: var(--gold-dim); box-shadow: 0 0 0 1px rgba(201,162,75,0.25), 0 12px 40px rgba(0,0,0,0.4); }
 
-  .card-top { display: flex; gap: 0; }
+  .card-top { display: flex; gap: 0; align-items: stretch; }
   .thumb {
-    width: 118px; flex: none; background: var(--surface-2); position: relative;
+    width: 96px; flex: 0 0 96px; background: var(--surface-2); position: relative;
     display: grid; place-items: center; overflow: hidden; border-right: 1px solid var(--line);
   }
   .thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -251,9 +251,9 @@
     font-size: 9.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
     padding: 3px 7px; border-radius: 5px;
   }
-  .card-body { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
-  .brandline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .brandname { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .card-body { padding: 14px 15px; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .brandline { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; min-width: 0; }
+  .brandname { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 600; min-width: 0; overflow-wrap: anywhere; flex: 1 1 auto; }
   .cat-badge {
     font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;
     padding: 3px 8px; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
@@ -265,8 +265,8 @@
     font-size: 12px; color: #E8B3C4; font-style: italic;
   }
   .note-line svg { width: 13px; height: 13px; flex: none; }
-  .itemname { font-family: var(--serif); font-size: 16.5px; line-height: 1.25; margin: 4px 0 0; font-weight: 600; }
-  .meta-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 12px; }
+  .itemname { font-family: var(--serif); font-size: 16px; line-height: 1.25; margin: 5px 0 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .meta-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 12px; min-width: 0; flex-wrap: wrap; }
   .price-cost { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
   .price-retail { font-family: var(--mono); font-size: 13px; color: var(--muted); text-decoration: line-through; margin-left: 2px; }
   .margin-badge {
@@ -275,12 +275,12 @@
   }
   .margin-badge.low { background: var(--danger-bg); color: var(--danger); border-color: rgba(217,106,91,0.3); }
   .margin-badge.mid { background: rgba(217,164,65,0.12); color: var(--amber); border-color: rgba(217,164,65,0.3); }
-  .sub-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-  .sub-meta div { font-size: 12px; color: var(--muted); }
+  .sub-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); min-width: 0; }
+  .sub-meta div { font-size: 12px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
   .sub-meta b { color: var(--text-2); font-weight: 600; font-family: var(--mono); }
-  .card-actions { display: flex; gap: 8px; margin-top: 14px; }
-  .card-actions .btn { flex: 1; justify-content: center; }
-  .card-actions .btn.icon-only { flex: 0 0 auto; }
+  .card-actions { display: flex; gap: 7px; margin-top: 14px; flex-wrap: wrap; }
+  .card-actions .btn { flex: 1 1 0; min-width: 0; justify-content: center; }
+  .card-actions .btn.icon-only { flex: 0 0 auto; padding: 6px 8px; }
   .btn:disabled, .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
   .btn:disabled:hover { border-color: var(--line-2); background: var(--surface-2); }
   a.btn { text-decoration: none; }
@@ -385,6 +385,14 @@
     .phase-num { font-size: 26px; }
     .field-row { grid-template-columns: 1fr; }
     .brand .sub { display: none; }
+  }
+  @media (max-width: 400px) {
+    .thumb { width: 76px; flex-basis: 76px; }
+    .thumb .ph { font-size: 22px; }
+    .card-body { padding: 13px 13px; }
+    .itemname { font-size: 15px; }
+    .price-cost { font-size: 20px; }
+    .card-actions .btn span, .card-actions .btn { font-size: 12px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
@@ -876,9 +884,9 @@
               ${d.link
                 ? `<a class="btn gold sm" href="${href}" target="_blank" rel="noopener noreferrer">
                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                     Open deal
+                     Open
                    </a>`
-                : `<button class="btn sm" disabled title="Add a product link to open this deal">No link yet</button>`}
+                : `<button class="btn sm" disabled title="Add a product link to open this deal">No link</button>`}
               <button class="btn sm" onclick="toggleCap('${d.id}')" id="capbtn-${d.id}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 Caption
