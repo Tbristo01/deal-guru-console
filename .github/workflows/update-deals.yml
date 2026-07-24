@@ -8,7 +8,12 @@ on:
     # Cron is always UTC (no daylight saving). These are ~8am and ~6pm US Eastern (EDT).
     - cron: "0 12 * * *"   # 08:00 ET  (morning drop)
     - cron: "0 22 * * *"   # 18:00 ET  (evening drop)
-  workflow_dispatch: {}      # manual "Run workflow" button in the Actions tab
+  workflow_dispatch:         # manual "Run workflow" button in the Actions tab
+    inputs:
+      alert_margin:
+        description: "Min % off retail to email (lower = more likely to send; use to test alerts)"
+        required: false
+        default: "40"
 
 permissions:
   contents: write
@@ -32,7 +37,7 @@ jobs:
         env:
           MIN_MARGIN: "25"
           MAX_ITEMS: "60"
-          ALERT_MARGIN: "40"          # email me deals at/above this % off retail
+          ALERT_MARGIN: ${{ github.event.inputs.alert_margin || '40' }}   # email me deals at/above this % off retail (40 on schedule)
           # Real affiliate sources activate automatically once these secrets exist.
           RAKUTEN_TOKEN: ${{ secrets.RAKUTEN_TOKEN }}
           AWIN_TOKEN: ${{ secrets.AWIN_TOKEN }}
