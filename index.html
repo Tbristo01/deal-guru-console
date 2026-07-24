@@ -185,6 +185,23 @@
   .btn svg { width: 15px; height: 15px; }
   .btn.sm { padding: 6px 11px; font-size: 12.5px; }
 
+  /* ---------- feed sync bar ---------- */
+  .feedbar {
+    display: flex; align-items: center; gap: 10px; margin: 22px 0 0;
+    padding: 11px 15px; border-radius: var(--radius);
+    background: var(--bg-2); border: 1px solid var(--line); font-size: 13px; color: var(--text-2);
+  }
+  .feedbar .feed-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .feedbar.live .feed-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(99,192,138,0.18); }
+  .feedbar b { color: var(--text); font-family: var(--mono); }
+  .feedbar .btn { flex: none; }
+
+  .badges { display: flex; align-items: center; gap: 6px; flex: none; }
+  .feed-tag {
+    font-size: 9px; letter-spacing: 0.1em; font-weight: 800; padding: 3px 6px; border-radius: 5px;
+    color: var(--green); background: var(--green-bg); border: 1px solid rgba(99,192,138,0.35);
+  }
+
   /* ---------- category chips ---------- */
   .chips { display: flex; gap: 9px; flex-wrap: wrap; margin: 22px 0 4px; }
   .chip {
@@ -432,6 +449,15 @@
       </div>
     </div>
 
+    <div class="feedbar" id="feedbar">
+      <span class="feed-dot"></span>
+      <span id="feed-status">Checking auto-feed…</span>
+      <button class="btn ghost sm" onclick="loadFeed(true)" style="margin-left:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Refresh feed
+      </button>
+    </div>
+
     <div class="chips" id="chips"></div>
 
     <div class="lane-note" id="lane-note"></div>
@@ -616,10 +642,51 @@
     { id: 8, brand: "Mejuri", name: "Bold Hoops 14k Gold", cat: "For Her", cost: 168, retail: 240, size: "Medium", seller: "ModeSens", aud: "Womens", link: "https://modesens.com/s/mejuri-hoops/", img: "", note: "Anniversary idea" }
   ];
 
-  let deals = [];
+  let deals = [];          // manual deals (persisted in localStorage)
+  let feedDeals = [];      // auto-fed deals from deals.json (not persisted)
+  let feedUpdated = null;
   let threshold = 30;
   let editId = null;
   let activeCat = "all";
+
+  // combined view: manual first, then feed items not already in the manual desk
+  function allDeals() {
+    const dealKey = d => (d.brand + "|" + d.name).toLowerCase().replace(/\s+/g, " ").trim();
+    const manualKeys = new Set(deals.map(dealKey));
+    const feed = feedDeals.filter(d => !manualKeys.has(dealKey(d)));
+    return [...deals, ...feed];
+  }
+
+  function timeAgo(date) {
+    if (!date) return "just now";
+    const s = Math.max(0, (Date.now() - date.getTime()) / 1000);
+    if (s < 90) return "just now";
+    const m = s / 60; if (m < 60) return Math.round(m) + "m ago";
+    const h = m / 60; if (h < 24) return Math.round(h) + "h ago";
+    return Math.round(h / 24) + "d ago";
+  }
+
+  async function loadFeed(manual) {
+    const status = document.getElementById("feed-status");
+    const bar = document.getElementById("feedbar");
+    if (manual) status.textContent = "Refreshing…";
+    try {
+      const res = await fetch("deals.json?t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("no feed");
+      const data = await res.json();
+      feedDeals = (data.deals || []).map(d => ({ ...d, auto: true }));
+      feedUpdated = data.updated ? new Date(data.updated) : new Date();
+      bar.classList.add("live");
+      status.innerHTML = `<b>${feedDeals.length}</b> auto-fed deals · synced ${timeAgo(feedUpdated)}`;
+      if (manual) toast("Feed refreshed — " + feedDeals.length + " deals");
+    } catch (e) {
+      feedDeals = [];
+      bar.classList.remove("live");
+      status.innerHTML = `Auto-feed not connected yet — <span style="color:var(--muted)">manual entries only</span>`;
+      if (manual) toast("No live feed found yet");
+    }
+    render();
+  }
 
   /* ---------- persistence ---------- */
   function saveState() {
@@ -691,12 +758,13 @@
   }
 
   function computeStats() {
-    const n = deals.length;
-    const margins = deals.map(marginOf);
+    const list = allDeals();
+    const n = list.length;
+    const margins = list.map(marginOf);
     const flagged = margins.filter(m => m >= threshold).length;
     const avg = n ? margins.reduce((a, b) => a + b, 0) / n : 0;
     const best = n ? Math.max(...margins) : 0;
-    const totalSave = deals.reduce((a, d) => a + Math.max(0, d.retail - d.cost), 0);
+    const totalSave = list.reduce((a, d) => a + Math.max(0, d.retail - d.cost), 0);
     return { n, flagged, avg, best, totalSave };
   }
 
@@ -720,10 +788,11 @@
   }
 
   function renderChips() {
+    const list = allDeals();
     const counts = {};
-    deals.forEach(d => { const c = d.cat || "Fashion"; counts[c] = (counts[c] || 0) + 1; });
+    list.forEach(d => { const c = d.cat || "Fashion"; counts[c] = (counts[c] || 0) + 1; });
     let html = `<button class="chip" aria-pressed="${activeCat === "all"}" onclick="setCat('all')">
-        <span class="dot" style="background:var(--muted)"></span>All <span class="n">${deals.length}</span></button>`;
+        <span class="dot" style="background:var(--muted)"></span>All <span class="n">${list.length}</span></button>`;
     Object.keys(CATS).forEach(c => {
       const n = counts[c] || 0;
       const forher = c === "For Her" ? " forher" : "";
@@ -750,7 +819,8 @@
     renderStats();
     renderChips();
     const grid = document.getElementById("grid");
-    const filtered = activeCat === "all" ? deals : deals.filter(d => (d.cat || "Fashion") === activeCat);
+    const base = allDeals();
+    const filtered = activeCat === "all" ? base : base.filter(d => (d.cat || "Fashion") === activeCat);
     const list = sortDeals(filtered);
     document.getElementById("deal-count").textContent = list.length + (list.length === 1 ? " deal" : " deals") + (activeCat !== "all" ? " · " + activeCat : "");
 
@@ -781,6 +851,7 @@
       const cat = CATS[d.cat] ? d.cat : "Fashion";
       const catCol = CATS[cat].color;
       const catBadge = `<span class="cat-badge" style="color:${catCol};border-color:${catCol}44"><span class="dot" style="background:${catCol}"></span>${CATS[cat].label}</span>`;
+      const feedTag = d.auto ? `<span class="feed-tag" title="Auto-fed from your affiliate feed">FEED</span>` : "";
       const noteEl = d.note
         ? `<div class="note-line"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.3C.4 8.8 1.6 5.5 4.6 4.7c1.9-.5 3.8.3 4.9 1.9l.5.7.5-.7c1.1-1.6 3-2.4 4.9-1.9 3 .8 4.2 4.1 2.6 7C19.5 16.1 12 21 12 21Z"/></svg>${esc(d.note)}</div>`
         : "";
@@ -789,7 +860,7 @@
         <div class="card-top">
           ${thumbEl}
           <div class="card-body">
-            <div class="brandline"><span class="brandname">${esc(d.brand)}</span>${catBadge}</div>
+            <div class="brandline"><span class="brandname">${esc(d.brand)}</span><span class="badges">${feedTag}${catBadge}</span></div>
             <div class="itemname">${nameEl}</div>
             <div class="meta-row">
               <div><span class="price-cost">${fmt(d.cost)}</span> <span class="price-retail">${fmt(d.retail)}</span></div>
@@ -808,16 +879,20 @@
                      Open deal
                    </a>`
                 : `<button class="btn sm" disabled title="Add a product link to open this deal">No link yet</button>`}
-              <button class="btn sm" onclick="toggleCap(${d.id})" id="capbtn-${d.id}">
+              <button class="btn sm" onclick="toggleCap('${d.id}')" id="capbtn-${d.id}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 Caption
               </button>
-              <button class="btn sm ghost icon-only" onclick="editDeal(${d.id})" aria-label="Edit deal">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-              </button>
-              <button class="btn sm ghost icon-only" onclick="delDeal(${d.id})" aria-label="Delete deal">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-              </button>
+              ${d.auto
+                ? `<button class="btn sm ghost icon-only" onclick="saveFeedDeal('${d.id}')" aria-label="Save to my desk" title="Save to my desk">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                   </button>`
+                : `<button class="btn sm ghost icon-only" onclick="editDeal('${d.id}')" aria-label="Edit deal">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                   </button>
+                   <button class="btn sm ghost icon-only" onclick="delDeal('${d.id}')" aria-label="Delete deal">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                   </button>`}
             </div>
           </div>
         </div>
@@ -826,11 +901,11 @@
             <div class="label" style="margin-bottom:8px">Channel caption — ready to paste</div>
             <div class="cap-text" id="captext-${d.id}">${esc(caption(d))}</div>
             <div class="cap-actions">
-              <button class="btn gold sm" onclick="copyCap(${d.id})">
+              <button class="btn gold sm" onclick="copyCap('${d.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 Copy caption
               </button>
-              <button class="btn sm" onclick="copyLink(${d.id})">
+              <button class="btn sm" onclick="copyLink('${d.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
                 Copy link
               </button>
@@ -856,13 +931,22 @@
     const p = document.getElementById("cap-" + id);
     p.classList.toggle("open");
   }
+  function findDeal(id) {
+    return deals.find(x => String(x.id) === String(id)) || feedDeals.find(x => String(x.id) === String(id));
+  }
   function copyCap(id) {
-    const d = deals.find(x => x.id === id);
+    const d = findDeal(id); if (!d) return;
     copy(caption(d), "Caption copied — paste into Telegram");
   }
   function copyLink(id) {
-    const d = deals.find(x => x.id === id);
+    const d = findDeal(id); if (!d) return;
     copy(affLink(d.link) || "", "Tagged link copied");
+  }
+  function saveFeedDeal(id) {
+    const d = feedDeals.find(x => String(x.id) === String(id)); if (!d) return;
+    const copyRec = { ...d, id: "m" + Date.now(), auto: false, source: "" };
+    deals.unshift(copyRec);
+    saveState(); render(); toast("Saved to your desk");
   }
   function copy(text, msg) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -891,7 +975,7 @@
     document.getElementById("modal-title").textContent = edit ? "Edit deal" : "Add a deal";
     const g = id => document.getElementById(id);
     if (edit) {
-      const d = deals.find(x => x.id === edit);
+      const d = deals.find(x => String(x.id) === String(edit));
       g("f-brand").value = d.brand; g("f-name").value = d.name; g("f-cost").value = d.cost;
       g("f-retail").value = d.retail; g("f-size").value = d.size || ""; g("f-seller").value = d.seller || "";
       g("f-aud").value = d.aud || ""; g("f-link").value = d.link || ""; g("f-img").value = d.img || "";
@@ -914,11 +998,11 @@
     if (isNaN(cost) || isNaN(retail)) { toast("Add cost and retail prices"); return; }
     const rec = { brand, name, cost, retail, cat: document.getElementById("f-cat").value, note: g("f-note"), size: g("f-size"), seller: g("f-seller"), aud: g("f-aud"), link: g("f-link"), img: g("f-img") };
     if (editId) {
-      const d = deals.find(x => x.id === editId);
+      const d = deals.find(x => String(x.id) === String(editId));
       Object.assign(d, rec);
       toast("Deal updated");
     } else {
-      rec.id = Date.now();
+      rec.id = "m" + Date.now();
       deals.unshift(rec);
       toast("Deal added");
     }
@@ -926,7 +1010,7 @@
   }
 
   function delDeal(id) {
-    deals = deals.filter(x => x.id !== id);
+    deals = deals.filter(x => String(x.id) !== String(id));
     saveState(); render(); toast("Deal removed");
   }
   function resetSample() {
@@ -971,6 +1055,7 @@
   document.getElementById("threshold").value = threshold;
   setThreshold(threshold);
   calc();
+  loadFeed();   // pull deals.json from the scheduled feed (falls back gracefully if absent)
 </script>
 
 </body>

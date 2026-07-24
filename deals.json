@@ -1,0 +1,82 @@
+{
+  "updated": "2026-07-24T02:51:24.269Z",
+  "count": 5,
+  "minMargin": 25,
+  "deals": [
+    {
+      "id": "feed-stone-island-garment-dyed-cotton-overshi-5",
+      "brand": "Stone Island",
+      "name": "Garment-Dyed Cotton Overshirt",
+      "cat": "Fashion",
+      "cost": 363,
+      "retail": 600,
+      "size": "",
+      "seller": "ModeSens",
+      "aud": "Mens",
+      "link": "https://modesens.com/s/demo-stoneisland/",
+      "img": "",
+      "note": "",
+      "source": "demo"
+    },
+    {
+      "id": "feed-arc-teryx-beta-lt-gore-tex-shell-jacket-3",
+      "brand": "Arc'teryx",
+      "name": "Beta LT Gore-Tex Shell Jacket",
+      "cat": "Gear",
+      "cost": 305,
+      "retail": 500,
+      "size": "",
+      "seller": "Gente Roma",
+      "aud": "Mens",
+      "link": "https://modesens.com/s/demo-arcteryx/",
+      "img": "",
+      "note": "",
+      "source": "demo"
+    },
+    {
+      "id": "feed-ysl-beauty-libre-eau-de-parfum-90ml-2",
+      "brand": "YSL Beauty",
+      "name": "Libre Eau de Parfum 90ml",
+      "cat": "For Her",
+      "cost": 105,
+      "retail": 165,
+      "size": "",
+      "seller": "LN-CC",
+      "aud": "Womens",
+      "link": "https://modesens.com/s/demo-yslbeauty/",
+      "img": "",
+      "note": "",
+      "source": "demo"
+    },
+    {
+      "id": "feed-salomon-xt-6-trail-sneaker-0",
+      "brand": "Salomon",
+      "name": "XT-6 Trail Sneaker",
+      "cat": "Gear",
+      "cost": 131,
+      "retail": 200,
+      "size": "",
+      "seller": "ModeSens",
+      "aud": "Mens",
+      "link": "https://modesens.com/s/demo-salomon/",
+      "img": "",
+      "note": "",
+      "source": "demo"
+    },
+    {
+      "id": "feed-patagonia-nano-puff-insulated-jacket-1",
+      "brand": "Patagonia",
+      "name": "Nano Puff Insulated Jacket",
+      "cat": "Gear",
+      "cost": 159,
+      "retail": 239,
+      "size": "",
+      "seller": "Cettire (duties incl.)",
+      "aud": "Mens",
+      "link": "https://modesens.com/s/demo-patagonia/",
+      "img": "",
+      "note": "",
+      "source": "demo"
+    }
+  ]
+}

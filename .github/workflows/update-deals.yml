@@ -1,0 +1,54 @@
+name: Update deal feed
+
+# Runs the fetcher on a schedule AND on demand, then commits a fresh
+# deals.json that the dashboard reads. No server required.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours (UTC). Change to taste, e.g. "0 13 * * *" = 1pm daily
+  workflow_dispatch: {}      # adds a manual "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write            # lets the job commit deals.json back to the repo
+
+concurrency:
+  group: update-deals
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fetch feeds and build deals.json
+        env:
+          MIN_MARGIN: "25"
+          MAX_ITEMS: "60"
+          # Real affiliate sources activate automatically once these secrets exist.
+          # Add them under: Settings → Secrets and variables → Actions.
+          RAKUTEN_TOKEN: ${{ secrets.RAKUTEN_TOKEN }}
+          AWIN_TOKEN: ${{ secrets.AWIN_TOKEN }}
+          AWIN_PUBLISHER_ID: ${{ secrets.AWIN_PUBLISHER_ID }}
+          AWIN_FEED_URL: ${{ secrets.AWIN_FEED_URL }}
+          IMPACT_ACCOUNT_SID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+          IMPACT_AUTH_TOKEN: ${{ secrets.IMPACT_AUTH_TOKEN }}
+          SKIMLINKS_ID: ${{ secrets.SKIMLINKS_ID }}
+          SKIMLINKS_API_KEY: ${{ secrets.SKIMLINKS_API_KEY }}
+        run: node scripts/fetch-deals.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name "deal-guru-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deals.json
+          if git diff --staged --quiet; then
+            echo "No feed changes this run."
+          else
+            git commit -m "chore: refresh deal feed [skip ci]"
+            git push
+          fi
