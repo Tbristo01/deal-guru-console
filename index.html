@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Men's fashion, gear, fragrance & accessories deal-finder with arbitrage margin calculator, a For Her gift lane, and affiliate playbook.">
+<meta name="color-scheme" content="dark">
+<title>Deal Guru Console</title>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #0B0B0C;
+    --bg-2: #101012;
+    --surface: #17161A;
+    --surface-2: #1E1D22;
+    --line: #2A2930;
+    --line-2: #35343C;
+    --gold: #C9A24B;
+    --gold-hi: #E7C778;
+    --gold-dim: #8A7433;
+    --text: #ECE8DF;
+    --text-2: #B4AEA1;
+    --muted: #8B857A;
+    --green: #63C08A;
+    --green-bg: rgba(99, 192, 138, 0.10);
+    --amber: #D9A441;
+    --danger: #D96A5B;
+    --danger-bg: rgba(217, 106, 91, 0.10);
+    --mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, "Menlo", monospace;
+    --serif: Georgia, "Times New Roman", "Times", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --maxw: 1180px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 620px at 78% -8%, rgba(201, 162, 75, 0.09), transparent 60%),
+      radial-gradient(900px 500px at 8% 0%, rgba(201, 162, 75, 0.045), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+  .num { font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  .label {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  ::selection { background: rgba(201, 162, 75, 0.28); color: #fff; }
+  a { color: var(--gold-hi); }
+  button { font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---------- shell ---------- */
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px 90px; }
+
+  header.top {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(14px);
+    background: linear-gradient(180deg, rgba(11,11,12,0.92), rgba(11,11,12,0.72));
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 14px 22px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .monogram {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--gold-dim);
+    display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 30%, rgba(201,162,75,0.16), rgba(0,0,0,0.4));
+    flex: none;
+  }
+  .monogram span {
+    font-family: var(--serif); font-weight: 700; font-size: 17px;
+    letter-spacing: 0.04em; color: var(--gold-hi);
+  }
+  .brand h1 {
+    margin: 0; font-family: var(--serif); font-weight: 700;
+    font-size: 19px; letter-spacing: 0.01em; line-height: 1.1;
+  }
+  .brand .sub { font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+  .switch { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .switch button {
+    border: 0; background: transparent; color: var(--text-2);
+    padding: 8px 18px; border-radius: 999px; cursor: pointer;
+    font-size: 13.5px; font-weight: 600; letter-spacing: 0.02em;
+    transition: color .18s, background .18s;
+  }
+  .switch button:hover { color: var(--text); }
+  .switch button[aria-selected="true"] {
+    background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+    color: #1a1400;
+  }
+
+  /* ---------- hero strip ---------- */
+  .hero {
+    padding: 34px 0 8px;
+  }
+  .hero .eyebrow { color: var(--gold); }
+  .hero h2 {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(28px, 4.4vw, 44px); line-height: 1.05;
+    margin: 12px 0 10px; letter-spacing: -0.01em; text-wrap: balance;
+    max-width: 20ch;
+  }
+  .hero p { color: var(--text-2); max-width: 62ch; margin: 0; font-size: 15.5px; }
+  .hero em { color: var(--gold-hi); font-style: normal; }
+
+  /* ---------- stat row ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 26px 0 8px; }
+  .stat {
+    background: linear-gradient(180deg, var(--surface), var(--bg-2));
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; position: relative; overflow: hidden;
+  }
+  .stat::after {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--line-2);
+  }
+  .stat.gold::after { background: linear-gradient(var(--gold), var(--gold-dim)); }
+  .stat.green::after { background: var(--green); }
+  .stat .v { font-family: var(--mono); font-size: 27px; font-weight: 600; letter-spacing: -0.02em; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .stat .v.pos { color: var(--green); }
+  .stat .v.gold { color: var(--gold-hi); }
+  .stat .cap { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ---------- controls ---------- */
+  .controls {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    margin: 26px 0 18px; padding: 16px 18px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  }
+  .ctl { display: flex; flex-direction: column; gap: 7px; }
+  .ctl.grow { flex: 1 1 220px; min-width: 180px; }
+  .thr-row { display: flex; align-items: center; gap: 14px; }
+  .thr-val { font-family: var(--mono); font-size: 18px; color: var(--gold-hi); font-weight: 600; min-width: 52px; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold)) no-repeat;
+    background-size: var(--fill, 30%) 100%;
+    width: 100%; cursor: pointer; margin: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--gold-hi); border: 3px solid #1a1400; cursor: grab; box-shadow: 0 0 0 1px var(--gold-dim);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: var(--gold-hi);
+    border: 3px solid #1a1400; cursor: grab;
+  }
+  select, input[type="text"], input[type="number"], input[type="url"], textarea {
+    background: var(--bg-2); border: 1px solid var(--line-2); color: var(--text);
+    border-radius: var(--radius-sm); padding: 9px 12px; font-family: var(--sans); font-size: 14px;
+    width: 100%;
+  }
+  select { cursor: pointer; }
+  textarea { resize: vertical; line-height: 1.5; }
+  .btn {
+    border: 1px solid var(--line-2); background: var(--surface-2); color: var(--text);
+    padding: 9px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13.5px; font-weight: 600;
+    transition: border-color .18s, background .18s, transform .05s; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn:hover { border-color: var(--gold-dim); background: #26242b; }
+  .btn:active { transform: translateY(1px); }
+  .btn.gold { background: linear-gradient(180deg, var(--gold), var(--gold-dim)); color: #1a1400; border-color: var(--gold-dim); }
+  .btn.gold:hover { background: linear-gradient(180deg, var(--gold-hi), var(--gold)); }
+  .btn.ghost { background: transparent; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.sm { padding: 6px 11px; font-size: 12.5px; }
+
+  /* ---------- category chips ---------- */
+  .chips { display: flex; gap: 9px; flex-wrap: wrap; margin: 22px 0 4px; }
+  .chip {
+    border: 1px solid var(--line-2); background: var(--surface); color: var(--text-2);
+    padding: 8px 15px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px; transition: border-color .16s, color .16s, background .16s;
+  }
+  .chip:hover { color: var(--text); border-color: var(--muted); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .chip .n { font-family: var(--mono); font-size: 11px; opacity: .7; }
+  .chip[aria-pressed="true"] { color: var(--text); background: var(--surface-2); border-color: currentColor; }
+  .chip.forher[aria-pressed="true"] { color: #E08AA6; border-color: #E08AA6; background: rgba(224,138,166,0.08); }
+
+  .lane-note {
+    display: none; align-items: center; gap: 12px; margin: 16px 0 2px;
+    padding: 14px 16px; border-radius: var(--radius);
+    background: rgba(224,138,166,0.06); border: 1px solid rgba(224,138,166,0.25); border-left: 3px solid #E08AA6;
+  }
+  .lane-note.show { display: flex; }
+  .lane-note svg { width: 20px; height: 20px; color: #E08AA6; flex: none; }
+  .lane-note b { font-family: var(--serif); font-size: 15px; color: var(--text); }
+  .lane-note span { font-size: 13px; color: var(--text-2); }
+
+  /* ---------- deal cards ---------- */
+  .deal-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 14px; gap: 12px; flex-wrap: wrap; }
+  .deal-head .label { font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .card {
+    background: linear-gradient(180deg, var(--surface), var(--bg-2));
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: border-color .2s, box-shadow .2s, transform .2s;
+  }
+  .card:hover { border-color: var(--line-2); box-shadow: 0 12px 40px rgba(0,0,0,0.45); transform: translateY(-2px); }
+  .card.flagged { border-color: var(--gold-dim); box-shadow: 0 0 0 1px rgba(201,162,75,0.25), 0 12px 40px rgba(0,0,0,0.4); }
+
+  .card-top { display: flex; gap: 0; }
+  .thumb {
+    width: 118px; flex: none; background: var(--surface-2); position: relative;
+    display: grid; place-items: center; overflow: hidden; border-right: 1px solid var(--line);
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb .ph { font-family: var(--serif); color: var(--muted); font-size: 30px; }
+  .flag {
+    position: absolute; top: 8px; left: 8px;
+    background: linear-gradient(180deg, var(--gold), var(--gold-dim)); color: #1a1400;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 5px;
+  }
+  .card-body { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+  .brandline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .brandname { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .cat-badge {
+    font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+    border: 1px solid; background: rgba(255,255,255,0.02);
+  }
+  .cat-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .note-line {
+    display: flex; align-items: center; gap: 7px; margin-top: 10px;
+    font-size: 12px; color: #E8B3C4; font-style: italic;
+  }
+  .note-line svg { width: 13px; height: 13px; flex: none; }
+  .itemname { font-family: var(--serif); font-size: 16.5px; line-height: 1.25; margin: 4px 0 0; font-weight: 600; }
+  .meta-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 12px; }
+  .price-cost { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .price-retail { font-family: var(--mono); font-size: 13px; color: var(--muted); text-decoration: line-through; margin-left: 2px; }
+  .margin-badge {
+    font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 4px 9px; border-radius: 7px;
+    background: var(--green-bg); color: var(--green); border: 1px solid rgba(99,192,138,0.3); white-space: nowrap;
+  }
+  .margin-badge.low { background: var(--danger-bg); color: var(--danger); border-color: rgba(217,106,91,0.3); }
+  .margin-badge.mid { background: rgba(217,164,65,0.12); color: var(--amber); border-color: rgba(217,164,65,0.3); }
+  .sub-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .sub-meta div { font-size: 12px; color: var(--muted); }
+  .sub-meta b { color: var(--text-2); font-weight: 600; font-family: var(--mono); }
+  .card-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .card-actions .btn { flex: 1; justify-content: center; }
+  .card-actions .btn.icon-only { flex: 0 0 auto; }
+  .btn:disabled, .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled:hover { border-color: var(--line-2); background: var(--surface-2); }
+  a.btn { text-decoration: none; }
+  .item-link { color: inherit; text-decoration: none; transition: color .15s; }
+  .item-link:hover { color: var(--gold-hi); }
+  a.thumb { cursor: pointer; }
+  a.thumb::before {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background: rgba(201,162,75,0); transition: background .2s;
+  }
+  a.thumb:hover::before { background: rgba(201,162,75,0.12); }
+  a.thumb .ph, a.thumb img { position: relative; }
+
+  /* caption panel */
+  .cap-panel { border-top: 1px solid var(--line); background: var(--bg-2); padding: 0; max-height: 0; overflow: hidden; transition: max-height .28s ease; }
+  .cap-panel.open { max-height: 420px; }
+  .cap-inner { padding: 14px 16px; }
+  .cap-text {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; color: var(--text-2);
+  }
+  .cap-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: var(--radius); }
+
+  /* ---------- modal ---------- */
+  .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); z-index: 90; display: none; }
+  .backdrop.open { display: grid; place-items: start center; overflow-y: auto; padding: 40px 16px; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--line-2); border-radius: 18px; width: 100%; max-width: 560px;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 6px; }
+  .modal-head h3 { margin: 0; font-family: var(--serif); font-size: 20px; }
+  .modal-body { padding: 10px 22px 8px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; margin-bottom: 6px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 22px 22px; }
+  .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
+  .x:hover { background: var(--surface-2); color: var(--text); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface-2); border: 1px solid var(--gold-dim); color: var(--text);
+    padding: 12px 20px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; z-index: 120;
+    transition: opacity .25s, transform .25s; display: flex; align-items: center; gap: 9px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast svg { width: 16px; height: 16px; color: var(--green); }
+
+  /* ---------- playbook ---------- */
+  .book { display: none; }
+  .book.active { display: block; }
+  .console.hidden { display: none; }
+
+  .book-hero { padding: 34px 0 14px; }
+  .book h2 { font-family: var(--serif); font-size: clamp(26px, 4vw, 40px); line-height: 1.06; margin: 12px 0 12px; letter-spacing: -0.01em; max-width: 22ch; text-wrap: balance; }
+  .book-hero p { color: var(--text-2); max-width: 64ch; margin: 0; }
+
+  .phase { display: grid; grid-template-columns: 60px 1fr; gap: 22px; padding: 26px 0; border-top: 1px solid var(--line); }
+  .phase-num { font-family: var(--serif); font-size: 34px; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+  .phase-num .of { display: block; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-top: 6px; }
+  .phase h3 { margin: 2px 0 4px; font-size: 20px; font-family: var(--serif); }
+  .phase .kicker { color: var(--gold); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+  .phase p { color: var(--text-2); margin: 8px 0; max-width: 70ch; font-size: 14.5px; }
+  .phase ul { margin: 10px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; max-width: 70ch; }
+  .phase li { display: flex; gap: 11px; color: var(--text-2); font-size: 14px; align-items: flex-start; }
+  .phase li svg { width: 16px; height: 16px; color: var(--gold); flex: none; margin-top: 3px; }
+  .phase li b { color: var(--text); font-weight: 600; }
+  .callout {
+    background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: var(--radius-sm);
+    padding: 14px 16px; margin: 14px 0; max-width: 70ch;
+  }
+  .callout .label { color: var(--gold); margin-bottom: 6px; display: block; }
+  .callout p { margin: 0; font-size: 13.5px; }
+
+  .toolgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin: 14px 0; max-width: 70ch; }
+  .toolcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 13px 14px; }
+  .toolcard h4 { margin: 0 0 3px; font-size: 14.5px; }
+  .toolcard .tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .toolcard p { font-size: 12.5px; color: var(--muted); margin: 5px 0 0; }
+
+  .disclaimer { margin-top: 40px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--muted); font-size: 12.5px; max-width: 74ch; }
+
+  /* commission calc */
+  .calc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin: 16px 0; max-width: 70ch; }
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; }
+  .calc-out { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .calc-out .o .v { font-family: var(--mono); font-size: 24px; color: var(--gold-hi); font-weight: 600; }
+  .calc-out .o .k { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .top-inner { padding: 12px 16px; }
+    .wrap { padding: 0 16px 70px; }
+    .switch button { padding: 8px 13px; font-size: 12.5px; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+    .phase-num { font-size: 26px; }
+    .field-row { grid-template-columns: 1fr; }
+    .brand .sub { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="monogram"><span>DG</span></div>
+      <div>
+        <h1>Deal Guru Console</h1>
+        <div class="sub">Arbitrage Desk</div>
+      </div>
+    </div>
+    <div class="switch" role="tablist" aria-label="View">
+      <button role="tab" id="tab-console" aria-selected="true" onclick="showView('console')">Console</button>
+      <button role="tab" id="tab-book" aria-selected="false" onclick="showView('book')">Playbook</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ CONSOLE ============ -->
+  <section class="console" id="view-console">
+    <div class="hero">
+      <div class="label eyebrow">Men's fashion · gear · fragrance · accessories</div>
+      <h2>Find the margin. Rank it. Post it.</h2>
+      <p>Drop in any piece you spot — the desk computes the arbitrage margin against retail, flags what clears your threshold, and writes the channel caption for you. Filter by category, or open the <em>For Her</em> lane to scope gifts for your girlfriend. <em>Let the spread decide what's worth sending.</em></p>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="controls">
+      <div class="ctl grow">
+        <div class="label">Post-worthy threshold — minimum margin</div>
+        <div class="thr-row">
+          <input type="range" id="threshold" min="5" max="60" value="30" step="1" oninput="setThreshold(this.value)" aria-label="Minimum margin percent to flag">
+          <span class="thr-val num" id="thr-val">30%</span>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="label">Sort by</div>
+        <select id="sort" onchange="render()">
+          <option value="margin">Margin %</option>
+          <option value="savings">Savings $</option>
+          <option value="retail">Retail price</option>
+          <option value="name">Brand A–Z</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <div class="label">Affiliate tag</div>
+        <input type="text" id="afftag" placeholder="?aff=BKGURU" oninput="saveState();render()" style="min-width:150px">
+      </div>
+      <div class="ctl" style="justify-content:flex-end">
+        <div class="label">&nbsp;</div>
+        <button class="btn gold" onclick="openModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+          Add deal
+        </button>
+      </div>
+    </div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="lane-note" id="lane-note"></div>
+
+    <div class="deal-head">
+      <div class="label" id="deal-count">— deals</div>
+      <button class="btn ghost sm" onclick="resetSample()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset to sample
+      </button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ============ PLAYBOOK ============ -->
+  <section class="book" id="view-book">
+    <div class="book-hero">
+      <div class="label" style="color:var(--gold)">From zero to deal channel</div>
+      <h2>The affiliate deal-channel playbook</h2>
+      <p>You don't hold inventory and you don't buy anything. You surface price gaps that already exist, attach a referral link, and get paid a commission when a follower buys. Here's the whole machine, in build order.</p>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">01<span class="of">Foundation</span></div>
+      <div>
+        <div class="kicker">Get paid to point at deals</div>
+        <h3>Join the affiliate networks</h3>
+        <p>Every link a deal channel posts carries a referral tag. When someone buys through it, the retailer pays 5–15% on luxury. Sign up (free) to these before anything else — approval can take a few days.</p>
+        <div class="toolgrid">
+          <div class="toolcard"><div class="tag">Aggregator</div><h4>ModeSens</h4><p>The luxury price-comparison engine the original channel uses. Has its own affiliate/referral program — links look like modesens.com/s/…</p></div>
+          <div class="toolcard"><div class="tag">Network</div><h4>Rakuten Advertising</h4><p>Access to Farfetch, SSENSE, Net-a-Porter, Nordstrom and hundreds of luxury retailers under one login.</p></div>
+          <div class="toolcard"><div class="tag">Network</div><h4>Sovrn // Skimlinks</h4><p>Auto-monetizes almost any store link. Fastest way to have a working referral link for any retailer.</p></div>
+          <div class="toolcard"><div class="tag">Network</div><h4>Awin / CJ / Impact</h4><p>Home of Cettire, Italist, LN-CC, MyTheresa and other cross-border boutiques where the arbitrage lives.</p></div>
+        </div>
+        <div class="callout"><span class="label">Why it works</span><p>You never touch product or money. The retailer fulfills, ships, and handles returns. You are paid for the introduction — win or lose on that specific sale, the deal itself is real.</p></div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">02<span class="of">Sourcing</span></div>
+      <div>
+        <div class="kicker">Where the deals actually come from</div>
+        <h3>Mine price arbitrage, don't hunt sales</h3>
+        <p>The margin on those D&G flip-flops ($235 vs $375 retail) isn't a flash sale — it's a European boutique selling to the US with duties included. Same product, structurally cheaper source. That's the well you draw from every day.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>ModeSens price history</b> — search any item, it shows the cheapest global seller and whether the price just dropped.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Cross-border boutiques</b> — Cettire, Italist, LN-CC, Gente Roma. Euro pricing + duties-included often beats US retail by 25–40%.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Outlet/flash rails</b> — YOOX, TheOutnet, Nordstrom Rack, The RealReal for end-of-season and pre-owned.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Set price alerts</b> — ModeSens and Google Shopping alerts on the 20–30 "hype" pieces your audience actually wants.</span></li>
+        </ul>
+        <div class="callout"><span class="label">The filter</span><p>Only post items with a clean <b>retail anchor</b> — a recognizable brand where "$X vs $Y retail" is obvious at a glance. Margin without a familiar name doesn't convert.</p></div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">03<span class="of">Package</span></div>
+      <div>
+        <div class="kicker">Turn a price gap into a post</div>
+        <h3>Cloak the link, write the anchor</h3>
+        <p>Two things happen to every deal before it ships: the affiliate tag gets hidden, and the price is framed against retail. The Console tab does both — the caption generator produces the exact "cost vs retail + size + link" format, and your affiliate tag is appended automatically.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Shorten & cloak</b> — run the tagged link through Bitly or Dub.co. Hides the referral tag and gives you click tracking (those 664/753 view counts).</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Anchor the price</b> — always "$616 vs $790 retail." The contrast is the product.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Show it on-body</b> — pair the product cutout with a styled/worn shot, exactly like the channel's split images.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">04<span class="of">Distribute</span></div>
+      <div>
+        <div class="kicker">Firehose + funnel</div>
+        <h3>Telegram broadcast, Instagram top of funnel</h3>
+        <p>The channel runs 1,749 Telegram subscribers as the paid-attention firehose, with Instagram recruiting them. Split the jobs deliberately.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Telegram broadcast channel</b> — where the deal volume goes. Frictionless links, no algorithm suppressing outbound URLs.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Instagram / TikTok</b> — reels and stories that showcase 1–2 hero deals and push "full drops in the Telegram — link in bio."</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span><b>Cadence</b> — 3–8 curated deals a day beats 40 mediocre ones. Every post needs real margin or the list goes numb.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">05<span class="of">Model</span></div>
+      <div>
+        <div class="kicker">Does the math work?</div>
+        <h3>Size the commission</h3>
+        <p>Plug in your list size and the numbers get real fast. Luxury commissions plus high AOV mean a modest, engaged list pays.</p>
+        <div class="calc">
+          <div class="calc-grid">
+            <div class="field" style="margin:0"><label class="label">List / reach</label><input type="number" id="c-reach" value="1749" oninput="calc()"></div>
+            <div class="field" style="margin:0"><label class="label">Click rate %</label><input type="number" id="c-ctr" value="35" oninput="calc()"></div>
+            <div class="field" style="margin:0"><label class="label">Conversion %</label><input type="number" id="c-cvr" value="2.5" oninput="calc()"></div>
+            <div class="field" style="margin:0"><label class="label">Avg order $</label><input type="number" id="c-aov" value="300" oninput="calc()"></div>
+            <div class="field" style="margin:0"><label class="label">Commission %</label><input type="number" id="c-comm" value="8" oninput="calc()"></div>
+            <div class="field" style="margin:0"><label class="label">Posts / day</label><input type="number" id="c-posts" value="5" oninput="calc()"></div>
+          </div>
+          <div class="calc-out">
+            <div class="o"><div class="v num" id="o-perpost">$0</div><div class="k">Per post</div></div>
+            <div class="o"><div class="v num" id="o-day">$0</div><div class="k">Per day</div></div>
+            <div class="o"><div class="v num" id="o-month">$0</div><div class="k">Per month</div></div>
+            <div class="o"><div class="v num" id="o-sales">0</div><div class="k">Sales / month</div></div>
+          </div>
+        </div>
+        <p class="hint">Illustrative model, not a guarantee — real numbers depend on niche, trust, and how tight your curation is.</p>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong style="color:var(--text-2)">Play it clean.</strong> Disclose affiliate links (FTC requires it — a simple "contains affiliate links" line works). Respect each retailer's affiliate terms and each platform's promotion rules. Sell only genuine goods from authorized sources; the arbitrage is regional pricing, never counterfeits.
+    </div>
+  </section>
+
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="backdrop" id="backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h3 id="modal-title">Add a deal</h3>
+      <button class="x" onclick="closeModal()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label class="label">Brand</label><input type="text" id="f-brand" placeholder="Tom Ford"></div>
+        <div class="field"><label class="label">Category</label>
+          <select id="f-cat">
+            <option value="Fashion">Fashion</option>
+            <option value="Gear">Gear</option>
+            <option value="Fragrance">Fragrance</option>
+            <option value="Accessories">Accessories</option>
+            <option value="For Her">For Her (gift)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label class="label">Item name</label><input type="text" id="f-name" placeholder="Oud Wood Eau de Parfum 50ml"></div>
+      <div class="field-row">
+        <div class="field"><label class="label">Your cost $</label><input type="number" id="f-cost" placeholder="218" step="0.01"></div>
+        <div class="field"><label class="label">Retail $</label><input type="number" id="f-retail" placeholder="320" step="0.01"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="label">Size(s)</label><input type="text" id="f-size" placeholder="50ml"></div>
+        <div class="field"><label class="label">Audience</label><input type="text" id="f-aud" placeholder="Mens"></div>
+      </div>
+      <div class="field"><label class="label">Seller / source</label><input type="text" id="f-seller" placeholder="Cettire (duties incl.)"></div>
+      <div class="field"><label class="label">Note — occasion / her size <span style="color:var(--muted);text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="f-note" placeholder="Anniversary — she's a 37"></div>
+      <div class="field"><label class="label">Product link</label><input type="url" id="f-link" placeholder="https://modesens.com/s/…"><div class="hint">Your affiliate tag is appended automatically to opened & copied links.</div></div>
+      <div class="field"><label class="label">Image URL (optional)</label><input type="url" id="f-img" placeholder="https://…"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn gold" onclick="saveDeal()">Save deal</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toast-msg">Copied</span>
+</div>
+
+<script>
+  const CATS = {
+    "Fashion":     { color: "#C9A24B", label: "Fashion" },
+    "Gear":        { color: "#6FA8DC", label: "Gear" },
+    "Fragrance":   { color: "#B48CD9", label: "Fragrance" },
+    "Accessories": { color: "#5FC2B0", label: "Accessories" },
+    "For Her":     { color: "#E08AA6", label: "For Her" }
+  };
+
+  const SAMPLE = [
+    { id: 1, brand: "Maison Margiela", name: "Leather Replica Sneaker", cat: "Fashion", cost: 616, retail: 790, size: "Sz 40–44", seller: "ModeSens", aud: "Mens", link: "https://modesens.com/s/kbS/", img: "", note: "" },
+    { id: 2, brand: "Tom Ford", name: "Oud Wood Eau de Parfum 50ml", cat: "Fragrance", cost: 218, retail: 320, size: "50ml", seller: "ModeSens", aud: "Mens", link: "https://modesens.com/s/tf-oudwood/", img: "", note: "" },
+    { id: 3, brand: "Arc'teryx", name: "Beta LT Gore-Tex Shell Jacket", cat: "Gear", cost: 349, retail: 500, size: "M / L", seller: "Cettire (duties incl.)", aud: "Mens", link: "https://modesens.com/s/arc-beta-lt/", img: "", note: "" },
+    { id: 4, brand: "Bottega Veneta", name: "Intrecciato Zip Card Case", cat: "Accessories", cost: 268, retail: 450, size: "One size", seller: "Italist", aud: "Mens", link: "https://modesens.com/s/bvZ/", img: "", note: "" },
+    { id: 5, brand: "Saint Laurent", name: "Monogram Leather Belt", cat: "Accessories", cost: 262, retail: 450, size: "Sz 90–95", seller: "Cettire (duties incl.)", aud: "Mens", link: "https://modesens.com/s/ysl-belt/", img: "", note: "" },
+    { id: 6, brand: "Dolce & Gabbana", name: "Logo Plaque Flip Flops", cat: "For Her", cost: 234.60, retail: 375, size: "Sz 36–39", seller: "Cettire (duties incl.)", aud: "Womens", link: "https://bit.ly/3RN8T3n", img: "", note: "She's a 37 — summer gift" },
+    { id: 7, brand: "YSL Beauty", name: "Libre Eau de Parfum 90ml", cat: "For Her", cost: 108, retail: 165, size: "90ml", seller: "ModeSens", aud: "Womens", link: "https://modesens.com/s/ysl-libre/", img: "", note: "Her signature scent" },
+    { id: 8, brand: "Mejuri", name: "Bold Hoops 14k Gold", cat: "For Her", cost: 168, retail: 240, size: "Medium", seller: "ModeSens", aud: "Womens", link: "https://modesens.com/s/mejuri-hoops/", img: "", note: "Anniversary idea" }
+  ];
+
+  let deals = [];
+  let threshold = 30;
+  let editId = null;
+  let activeCat = "all";
+
+  /* ---------- persistence ---------- */
+  function saveState() {
+    try {
+      localStorage.setItem("dg_deals", JSON.stringify(deals));
+      localStorage.setItem("dg_thr", threshold);
+      localStorage.setItem("dg_cat", activeCat);
+      localStorage.setItem("dg_aff", document.getElementById("afftag").value);
+    } catch (e) {}
+  }
+  function loadState() {
+    try {
+      const d = localStorage.getItem("dg_deals");
+      deals = d ? JSON.parse(d) : SAMPLE.slice();
+      const t = localStorage.getItem("dg_thr");
+      if (t) threshold = +t;
+      const c = localStorage.getItem("dg_cat");
+      if (c && (c === "all" || CATS[c])) activeCat = c;
+      const a = localStorage.getItem("dg_aff");
+      if (a) document.getElementById("afftag").value = a;
+    } catch (e) { deals = SAMPLE.slice(); }
+  }
+
+  /* ---------- helpers ---------- */
+  const money = n => "$" + (Math.round(n) === n ? n : n.toFixed(2)).toLocaleString?.() ?? "$" + n;
+  function fmt(n) {
+    const isInt = Math.abs(n - Math.round(n)) < 0.005;
+    return "$" + Number(n).toLocaleString("en-US", {
+      minimumFractionDigits: isInt ? 0 : 2,
+      maximumFractionDigits: isInt ? 0 : 2
+    });
+  }
+  function marginOf(d) {
+    if (!d.retail || d.retail <= 0) return 0;
+    return ((d.retail - d.cost) / d.retail) * 100;
+  }
+  function marginClass(m) { return m >= threshold ? "" : (m >= threshold * 0.6 ? "mid" : "low"); }
+
+  function affLink(link) {
+    const tag = document.getElementById("afftag").value.trim();
+    if (!tag || !link) return link;
+    if (link.includes("bit.ly") || link.includes("dub.")) return link; // already cloaked
+    const clean = tag.replace(/^[?&]/, "");
+    return link + (link.includes("?") ? "&" : "?") + clean;
+  }
+
+  function caption(d) {
+    const m = marginOf(d);
+    const parts = [];
+    parts.push(d.brand.toUpperCase());
+    parts.push(d.name);
+    const aud = d.aud ? d.aud + " " : "";
+    parts.push(aud + fmt(d.cost) + " vs " + fmt(d.retail) + " retail  (–" + Math.round(m) + "%)");
+    if (d.size) parts.push(d.size);
+    if (d.seller) parts.push("via " + d.seller);
+    parts.push("");
+    parts.push(affLink(d.link) || "[ add product link ]");
+    return parts.join("\n");
+  }
+
+  /* ---------- render ---------- */
+  function setThreshold(v) {
+    threshold = +v;
+    document.getElementById("thr-val").textContent = v + "%";
+    const pct = ((v - 5) / (60 - 5)) * 100;
+    document.getElementById("threshold").style.setProperty("--fill", pct + "%");
+    saveState();
+    render();
+  }
+
+  function computeStats() {
+    const n = deals.length;
+    const margins = deals.map(marginOf);
+    const flagged = margins.filter(m => m >= threshold).length;
+    const avg = n ? margins.reduce((a, b) => a + b, 0) / n : 0;
+    const best = n ? Math.max(...margins) : 0;
+    const totalSave = deals.reduce((a, d) => a + Math.max(0, d.retail - d.cost), 0);
+    return { n, flagged, avg, best, totalSave };
+  }
+
+  function renderStats() {
+    const s = computeStats();
+    document.getElementById("stats").innerHTML = `
+      <div class="stat"><div class="label">Live deals</div><div class="v">${s.n}</div><div class="cap">in the desk</div></div>
+      <div class="stat gold"><div class="label">Post-worthy</div><div class="v gold">${s.flagged}</div><div class="cap">clear ${threshold}% margin</div></div>
+      <div class="stat green"><div class="label">Avg margin</div><div class="v pos">${s.avg.toFixed(0)}%</div><div class="cap">best ${s.best.toFixed(0)}%</div></div>
+      <div class="stat"><div class="label">Total spread</div><div class="v">${fmt(s.totalSave)}</div><div class="cap">retail minus cost</div></div>`;
+  }
+
+  function sortDeals(list) {
+    const by = document.getElementById("sort").value;
+    const c = list.slice();
+    if (by === "margin") c.sort((a, b) => marginOf(b) - marginOf(a));
+    else if (by === "savings") c.sort((a, b) => (b.retail - b.cost) - (a.retail - a.cost));
+    else if (by === "retail") c.sort((a, b) => b.retail - a.retail);
+    else if (by === "name") c.sort((a, b) => a.brand.localeCompare(b.brand));
+    return c;
+  }
+
+  function renderChips() {
+    const counts = {};
+    deals.forEach(d => { const c = d.cat || "Fashion"; counts[c] = (counts[c] || 0) + 1; });
+    let html = `<button class="chip" aria-pressed="${activeCat === "all"}" onclick="setCat('all')">
+        <span class="dot" style="background:var(--muted)"></span>All <span class="n">${deals.length}</span></button>`;
+    Object.keys(CATS).forEach(c => {
+      const n = counts[c] || 0;
+      const forher = c === "For Her" ? " forher" : "";
+      html += `<button class="chip${forher}" aria-pressed="${activeCat === c}" onclick="setCat('${c}')" style="${activeCat === c ? "color:" + CATS[c].color + ";border-color:" + CATS[c].color : ""}">
+          <span class="dot" style="background:${CATS[c].color}"></span>${CATS[c].label} <span class="n">${n}</span></button>`;
+    });
+    document.getElementById("chips").innerHTML = html;
+
+    const lane = document.getElementById("lane-note");
+    if (activeCat === "For Her") {
+      lane.classList.add("show");
+      lane.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.3C.4 8.8 1.6 5.5 4.6 4.7c1.9-.5 3.8.3 4.9 1.9l.5.7.5-.7c1.1-1.6 3-2.4 4.9-1.9 3 .8 4.2 4.1 2.6 7C19.5 16.1 12 21 12 21Z"/></svg>
+        <div><b>For Her — gift radar</b><br><span>Deals scoped for your girlfriend. Add her sizes and occasion in the note field so you're ready when the price drops.</span></div>`;
+    } else lane.classList.remove("show");
+  }
+
+  function setCat(c) {
+    activeCat = c;
+    saveState();
+    render();
+  }
+
+  function render() {
+    renderStats();
+    renderChips();
+    const grid = document.getElementById("grid");
+    const filtered = activeCat === "all" ? deals : deals.filter(d => (d.cat || "Fashion") === activeCat);
+    const list = sortDeals(filtered);
+    document.getElementById("deal-count").textContent = list.length + (list.length === 1 ? " deal" : " deals") + (activeCat !== "all" ? " · " + activeCat : "");
+
+    if (!list.length) {
+      const msg = activeCat === "all"
+        ? `No deals yet. Hit <b style="color:var(--gold-hi)">Add deal</b> to log your first find.`
+        : `No <b style="color:var(--gold-hi)">${activeCat}</b> deals yet. Add one and set its category to ${activeCat}.`;
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1">${msg}</div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(d => {
+      const m = marginOf(d);
+      const flagged = m >= threshold;
+      const mc = marginClass(m);
+      const initials = d.brand.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      const href = esc(affLink(d.link) || "");
+      const thumb = d.img
+        ? `<img src="${esc(d.img)}" alt="${esc(d.brand)} ${esc(d.name)}" onerror="this.style.display='none';this.parentNode.querySelector('.ph').style.display='block'"><span class="ph" style="display:none">${initials}</span>`
+        : `<span class="ph">${initials}</span>`;
+      const flagEl = flagged ? '<span class="flag">Post it</span>' : '';
+      const thumbEl = d.link
+        ? `<a class="thumb" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(d.brand)} deal">${flagEl}${thumb}</a>`
+        : `<div class="thumb">${flagEl}${thumb}</div>`;
+      const nameEl = d.link
+        ? `<a class="item-link" href="${href}" target="_blank" rel="noopener noreferrer">${esc(d.name)}</a>`
+        : esc(d.name);
+      const cat = CATS[d.cat] ? d.cat : "Fashion";
+      const catCol = CATS[cat].color;
+      const catBadge = `<span class="cat-badge" style="color:${catCol};border-color:${catCol}44"><span class="dot" style="background:${catCol}"></span>${CATS[cat].label}</span>`;
+      const noteEl = d.note
+        ? `<div class="note-line"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10-9.3C.4 8.8 1.6 5.5 4.6 4.7c1.9-.5 3.8.3 4.9 1.9l.5.7.5-.7c1.1-1.6 3-2.4 4.9-1.9 3 .8 4.2 4.1 2.6 7C19.5 16.1 12 21 12 21Z"/></svg>${esc(d.note)}</div>`
+        : "";
+      return `
+      <div class="card ${flagged ? "flagged" : ""}">
+        <div class="card-top">
+          ${thumbEl}
+          <div class="card-body">
+            <div class="brandline"><span class="brandname">${esc(d.brand)}</span>${catBadge}</div>
+            <div class="itemname">${nameEl}</div>
+            <div class="meta-row">
+              <div><span class="price-cost">${fmt(d.cost)}</span> <span class="price-retail">${fmt(d.retail)}</span></div>
+              <div class="margin-badge ${mc}">–${m.toFixed(0)}%</div>
+            </div>
+            <div class="sub-meta">
+              ${d.size ? `<div>Size <b>${esc(d.size)}</b></div>` : ""}
+              <div>Spread <b>${fmt(d.retail - d.cost)}</b></div>
+              ${d.seller ? `<div>Via <b style="font-family:var(--sans)">${esc(d.seller)}</b></div>` : ""}
+            </div>
+            ${noteEl}
+            <div class="card-actions">
+              ${d.link
+                ? `<a class="btn gold sm" href="${href}" target="_blank" rel="noopener noreferrer">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                     Open deal
+                   </a>`
+                : `<button class="btn sm" disabled title="Add a product link to open this deal">No link yet</button>`}
+              <button class="btn sm" onclick="toggleCap(${d.id})" id="capbtn-${d.id}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                Caption
+              </button>
+              <button class="btn sm ghost icon-only" onclick="editDeal(${d.id})" aria-label="Edit deal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>
+              <button class="btn sm ghost icon-only" onclick="delDeal(${d.id})" aria-label="Delete deal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="cap-panel" id="cap-${d.id}">
+          <div class="cap-inner">
+            <div class="label" style="margin-bottom:8px">Channel caption — ready to paste</div>
+            <div class="cap-text" id="captext-${d.id}">${esc(caption(d))}</div>
+            <div class="cap-actions">
+              <button class="btn gold sm" onclick="copyCap(${d.id})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy caption
+              </button>
+              <button class="btn sm" onclick="copyLink(${d.id})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+                Copy link
+              </button>
+              ${d.link
+                ? `<a class="btn sm" href="${href}" target="_blank" rel="noopener noreferrer">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                     Open
+                   </a>`
+                : ""}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* ---------- interactions ---------- */
+  function toggleCap(id) {
+    const p = document.getElementById("cap-" + id);
+    p.classList.toggle("open");
+  }
+  function copyCap(id) {
+    const d = deals.find(x => x.id === id);
+    copy(caption(d), "Caption copied — paste into Telegram");
+  }
+  function copyLink(id) {
+    const d = deals.find(x => x.id === id);
+    copy(affLink(d.link) || "", "Tagged link copied");
+  }
+  function copy(text, msg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => toast(msg)).catch(() => fallbackCopy(text, msg));
+    } else fallbackCopy(text, msg);
+  }
+  function fallbackCopy(text, msg) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast(msg); } catch (e) { toast("Press ⌘/Ctrl+C to copy"); }
+    document.body.removeChild(ta);
+  }
+  let toastT;
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-msg").textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  /* ---------- CRUD ---------- */
+  function openModal(edit) {
+    editId = edit ?? null;
+    document.getElementById("modal-title").textContent = edit ? "Edit deal" : "Add a deal";
+    const g = id => document.getElementById(id);
+    if (edit) {
+      const d = deals.find(x => x.id === edit);
+      g("f-brand").value = d.brand; g("f-name").value = d.name; g("f-cost").value = d.cost;
+      g("f-retail").value = d.retail; g("f-size").value = d.size || ""; g("f-seller").value = d.seller || "";
+      g("f-aud").value = d.aud || ""; g("f-link").value = d.link || ""; g("f-img").value = d.img || "";
+      g("f-cat").value = CATS[d.cat] ? d.cat : "Fashion"; g("f-note").value = d.note || "";
+    } else {
+      ["f-brand", "f-name", "f-cost", "f-retail", "f-size", "f-seller", "f-aud", "f-link", "f-img", "f-note"].forEach(i => g(i).value = "");
+      g("f-cat").value = (activeCat !== "all" && CATS[activeCat]) ? activeCat : "Fashion";
+    }
+    document.getElementById("backdrop").classList.add("open");
+    setTimeout(() => g("f-brand").focus(), 60);
+  }
+  function closeModal() { document.getElementById("backdrop").classList.remove("open"); editId = null; }
+  function editDeal(id) { openModal(id); }
+
+  function saveDeal() {
+    const g = id => document.getElementById(id).value.trim();
+    const brand = g("f-brand"), name = g("f-name");
+    const cost = parseFloat(g("f-cost")), retail = parseFloat(g("f-retail"));
+    if (!brand || !name) { toast("Add a brand and item name"); return; }
+    if (isNaN(cost) || isNaN(retail)) { toast("Add cost and retail prices"); return; }
+    const rec = { brand, name, cost, retail, cat: document.getElementById("f-cat").value, note: g("f-note"), size: g("f-size"), seller: g("f-seller"), aud: g("f-aud"), link: g("f-link"), img: g("f-img") };
+    if (editId) {
+      const d = deals.find(x => x.id === editId);
+      Object.assign(d, rec);
+      toast("Deal updated");
+    } else {
+      rec.id = Date.now();
+      deals.unshift(rec);
+      toast("Deal added");
+    }
+    saveState(); closeModal(); render();
+  }
+
+  function delDeal(id) {
+    deals = deals.filter(x => x.id !== id);
+    saveState(); render(); toast("Deal removed");
+  }
+  function resetSample() {
+    deals = SAMPLE.slice();
+    saveState(); render(); toast("Reset to sample deals");
+  }
+
+  /* ---------- views ---------- */
+  function showView(v) {
+    const con = document.getElementById("view-console");
+    const book = document.getElementById("view-book");
+    const tc = document.getElementById("tab-console");
+    const tb = document.getElementById("tab-book");
+    if (v === "book") {
+      con.classList.add("hidden"); book.classList.add("active");
+      tb.setAttribute("aria-selected", "true"); tc.setAttribute("aria-selected", "false");
+    } else {
+      con.classList.remove("hidden"); book.classList.remove("active");
+      tc.setAttribute("aria-selected", "true"); tb.setAttribute("aria-selected", "false");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ---------- commission calc ---------- */
+  function calc() {
+    const v = id => parseFloat(document.getElementById(id).value) || 0;
+    const reach = v("c-reach"), ctr = v("c-ctr") / 100, cvr = v("c-cvr") / 100, aov = v("c-aov"), comm = v("c-comm") / 100, posts = v("c-posts");
+    const salesPerPost = reach * ctr * cvr;
+    const perPost = salesPerPost * aov * comm;
+    const perDay = perPost * posts;
+    const perMonth = perDay * 30;
+    const salesMonth = salesPerPost * posts * 30;
+    document.getElementById("o-perpost").textContent = fmt(perPost);
+    document.getElementById("o-day").textContent = fmt(perDay);
+    document.getElementById("o-month").textContent = fmt(perMonth);
+    document.getElementById("o-sales").textContent = Math.round(salesMonth).toLocaleString("en-US");
+  }
+
+  /* ---------- boot ---------- */
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+  loadState();
+  document.getElementById("threshold").value = threshold;
+  setThreshold(threshold);
+  calc();
+</script>
+
+</body>
+</html>
